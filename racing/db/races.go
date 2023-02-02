@@ -88,7 +88,11 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		query += " WHERE " + strings.Join(clauses, " AND ")
 	}
 
-	query += " ORDER BY advertised_start_time DESC"
+	if filter.OrderType != "" {
+		orderType:= mapRacesToDbName(filter.OrderType)
+		orderQuery:= " ORDER BY " + orderType
+		query += orderQuery
+	}
 
 	return query, args
 }
@@ -121,4 +125,15 @@ func (m *racesRepo) scanRaces(
 	}
 
 	return races, nil
+}
+
+func mapRacesToDbName(orderType string) string {
+	race := map[string]string{
+		"meetingID": "meeting_id",
+		"name": "name",
+		"number": "number",
+		"visible": "visible",
+		"start": "advertised_start_time",
+	}
+	return race[orderType]
 }
