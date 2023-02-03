@@ -71,6 +71,11 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		return query, args
 	}
 
+	if filter.Visible {
+		clauses = append(clauses, "visible = ?")
+		args = append(args, filter.Visible)
+	}
+
 	if len(filter.MeetingIds) > 0 {
 		clauses = append(clauses, "meeting_id IN ("+strings.Repeat("?,", len(filter.MeetingIds)-1)+"?)")
 
@@ -83,6 +88,12 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		query += " WHERE " + strings.Join(clauses, " AND ")
 	}
 
+	if filter.OrderType != "" {
+		orderType:= mapRacesToDbName(filter.OrderType)
+		orderQuery:= " ORDER BY " + orderType
+		query += orderQuery
+	}
+
 	return query, args
 }
 
@@ -90,6 +101,7 @@ func (m *racesRepo) scanRaces(
 	rows *sql.Rows,
 ) ([]*racing.Race, error) {
 	var races []*racing.Race
+	today := time.Now()
 
 	for rows.Next() {
 		var race racing.Race
@@ -110,8 +122,25 @@ func (m *racesRepo) scanRaces(
 
 		race.AdvertisedStartTime = ts
 
+		if (advertisedStart.After(today)){
+			race.Status = "OPEN"
+		} else {
+			race.Status = "CLOSED"
+		}
+
 		races = append(races, &race)
 	}
 
 	return races, nil
+}
+
+func mapRacesToDbName(orderType string) string {
+	race := map[string]string{
+		"meetingID": "meeting_id",
+		"name": "name",
+		"number": "number",
+		"visible": "visible",
+		"start": "advertised_start_time",
+	}
+	return race[orderType]
 }
