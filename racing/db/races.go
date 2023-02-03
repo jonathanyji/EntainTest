@@ -71,6 +71,11 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 		return query, args
 	}
 
+	if filter.Visible {
+		clauses = append(clauses, "visible = ?")
+		args = append(args, filter.Visible)
+	}
+
 	if len(filter.MeetingIds) > 0 {
 		clauses = append(clauses, "meeting_id IN ("+strings.Repeat("?,", len(filter.MeetingIds)-1)+"?)")
 
@@ -81,6 +86,12 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 
 	if len(clauses) != 0 {
 		query += " WHERE " + strings.Join(clauses, " AND ")
+	}
+
+	if filter.OrderType != "" {
+		orderType:= mapRacesToDbName(filter.OrderType)
+		orderQuery:= " ORDER BY " + orderType
+		query += orderQuery
 	}
 
 	return query, args
@@ -114,4 +125,15 @@ func (m *racesRepo) scanRaces(
 	}
 
 	return races, nil
+}
+
+func mapRacesToDbName(orderType string) string {
+	race := map[string]string{
+		"meetingID": "meeting_id",
+		"name": "name",
+		"number": "number",
+		"visible": "visible",
+		"start": "advertised_start_time",
+	}
+	return race[orderType]
 }
