@@ -11,6 +11,11 @@ service Racing {
   rpc ListRaces(ListRacesRequest) returns (ListRacesResponse) {
     option (google.api.http) = { post: "/v1/list-races", body: "*" };
   }
+
+  // GetRace request an ID and returns a single race based on Id.
+  rpc GetRace(GetRaceRequest) returns (GetRaceResponse) {
+    option (google.api.http) = { get: "/v1/{id}" };
+  }
 }
 
 /* Requests/Responses */
@@ -25,9 +30,21 @@ message ListRacesResponse {
   repeated Race races = 1;
 }
 
+// Request for GetRace call.
+message GetRaceRequest {
+  string id = 1;
+}
+
+// Response to GetRace call.
+message GetRaceResponse {
+  Race races = 1;
+}
+
 // Filter for listing races.
 message ListRacesRequestFilter {
   repeated int64 meeting_ids = 1;
+  bool visible = 2;
+  string order_type = 3;
 }
 
 /* Resources */
@@ -46,4 +63,6 @@ message Race {
   bool visible = 5;
   // AdvertisedStartTime is the time the race is advertised to run.
   google.protobuf.Timestamp advertised_start_time = 6;
+  // Status represent the status of race based on advertised start time
+  string status = 7;
 }

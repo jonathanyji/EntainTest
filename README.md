@@ -58,7 +58,16 @@ go build && ./api
 ➜ INFO[0000] API server listening on: localhost:8000
 ```
 
-4. Make a request for races... 
+4. In another terminal window, start our sports service...
+
+```bash
+cd ./sports
+
+go build && ./sports
+➜ INFO[0000] sportsEndpoint listening on: localhost:9090
+```
+
+5. Make a request for races... 
 
 ```bash
 curl -X "POST" "http://localhost:8000/v1/list-races" \
@@ -66,6 +75,28 @@ curl -X "POST" "http://localhost:8000/v1/list-races" \
      -d $'{
   "filter": {}
 }'
+```
+
+6. To make single request for races
+```bash
+curl -X "GET" "http://localhost:8000/v1/{id}" \
+     -H 'Content-Type: application/json' 
+```
+
+7. Make a request for Sports Event... 
+
+```bash
+curl -X "POST" "http://localhost:8000/v1/list-events" \
+     -H 'Content-Type: application/json' \
+     -d $'{
+  "filter": {}
+}'
+```
+
+6. To make single request for sports event
+```bash
+curl -X "GET" "http://localhost:8000/v1/event/{id}" \
+     -H 'Content-Type: application/json' 
 ```
 
 ### Changes/Updates Required

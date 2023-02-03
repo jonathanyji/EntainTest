@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"git.neds.sh/matty/entain/api/proto/racing"
+	"git.neds.sh/matty/entain/api/proto/sports"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 )
@@ -14,6 +15,7 @@ import (
 var (
 	apiEndpoint  = flag.String("api-endpoint", "localhost:8000", "API endpoint")
 	grpcEndpoint = flag.String("grpc-endpoint", "localhost:9000", "gRPC server endpoint")
+	sportsEndpoint = flag.String("sportsEndpoint", "localhost:9090", "gRPC server endpoint")
 )
 
 func main() {
@@ -38,6 +40,16 @@ func run() error {
 	); err != nil {
 		return err
 	}
+
+	if sportsError := sports.RegisterSportsHandlerFromEndpoint(
+		ctx,
+		mux,
+		*sportsEndpoint,
+		[]grpc.DialOption{grpc.WithInsecure()},
+	); sportsError != nil {
+		return sportsError
+	}
+
 
 	log.Printf("API server listening on: %s\n", *apiEndpoint)
 
