@@ -18,3 +18,17 @@ func getRaceQueries() map[string]string {
 		`,
 	}
 }
+
+func getRaceQuery(id string) string {
+	return `
+			SELECT 
+				id, 
+				meeting_id, 
+				name, 
+				number, 
+				visible, 
+				advertised_start_time 
+			FROM races
+			WHERE id = 
+		` + id
+}
