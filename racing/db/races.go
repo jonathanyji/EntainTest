@@ -18,6 +18,9 @@ type RacesRepo interface {
 
 	// List will return a list of races.
 	List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
+
+	// GetRace will return a race by Id.
+	GetRace(req *racing.GetRaceRequest) (*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -40,6 +43,25 @@ func (r *racesRepo) Init() error {
 	})
 
 	return err
+}
+
+func (r *racesRepo) GetRace(req *racing.GetRaceRequest) (*racing.Race, error){
+	var (
+		err   error
+		query string
+	)
+
+    id := req.GetId()
+
+    // Retrieve the race using the id
+	query = getRaceQuery(id)
+
+	row := r.db.QueryRow(query)
+	if err != nil {
+		return nil, err
+	}
+	
+	return r.scanSingleRace(row)
 }
 
 func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error) {
@@ -143,4 +165,33 @@ func mapRacesToDbName(orderType string) string {
 		"start": "advertised_start_time",
 	}
 	return race[orderType]
+}
+
+func (m *racesRepo) scanSingleRace(row *sql.Row)(*racing.Race, error){
+	today := time.Now()
+	var race racing.Race
+	var advertisedStart time.Time
+
+		if err := row.Scan(&race.Id, &race.MeetingId, &race.Name, &race.Number, &race.Visible, &advertisedStart); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, nil
+			}
+
+			return nil, err
+		}
+
+		ts, err := ptypes.TimestampProto(advertisedStart)
+		if err != nil {
+			return nil, err
+		}
+
+		race.AdvertisedStartTime = ts
+
+		if (advertisedStart.After(today)){
+			race.Status = "OPEN"
+		} else {
+			race.Status = "CLOSED"
+		}
+
+		return &race, nil
 }
