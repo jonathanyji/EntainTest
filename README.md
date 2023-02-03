@@ -74,6 +74,16 @@ curl -X "GET" "http://localhost:8000/v1/{id}" \
      -H 'Content-Type: application/json' \
 ```
 
+6. Make a request for Sports Event... 
+
+```bash
+curl -X "POST" "http://localhost:8000/v1/list-events" \
+     -H 'Content-Type: application/json' \
+     -d $'{
+  "filter": {}
+}'
+```
+
 ### Changes/Updates Required
 
 - We'd like to see you push this repository up to **GitHub/Gitlab/Bitbucket** and lodge a **Pull/Merge Request for each** of the below tasks.
